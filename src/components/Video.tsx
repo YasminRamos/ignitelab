@@ -5,7 +5,7 @@ import { gql, useQuery } from "@apollo/client";
 
 const GET_LESSON_BY_SLUG_QUERY = gql`
     query GetLessonBySlug($slug: String) {
-        lesson(where: {slug: "$slug"}) {
+        lesson(where: {slug: $slug}) {
             title
             videoId
             description
@@ -36,18 +36,24 @@ interface VideoProps {
 }
 
 export function Video(props: VideoProps){
-    const { data } = useQuery(GET_LESSON_BY_SLUG_QUERY, {
+    const { data } = useQuery<GetLessonBySlugResponse>(GET_LESSON_BY_SLUG_QUERY, {
         variables: {
             slug: props.lessonSlug,
         }
     })
+
+    if(!data){
+        return(<div className="flex-1">
+            <p>Carregando...</p>
+        </div>)
+    }
 
     return(
         <div className="flex-1">
             <div className="bg-black flex justify-center">
                 <div className="h-full w-full max-w-[1100px] max-h-[60vh] aspect-video">
                     <Player>
-                        <Youtube videoId="ACkZC2ICHi0" />
+                        <Youtube videoId={data.lesson.videoId} />
                         <DefaultUi />
                     </Player>
                 </div>
@@ -57,16 +63,16 @@ export function Video(props: VideoProps){
                     <div className="flex items-start gap-16">
                         <div className="flex-1">
                             <h1 className="text-2xl font-bold">
-                                Aula 1 - Abertura
+                            {data.lesson.title}
                             </h1>
                             <p className="mt-4 text-gray-200 leading-relaxed">
-                                Lorem ipsum, dolor sit amet consectetur adipisicing elit. Cum deserunt incidunt iusto placeat eos similique suscipit non voluptas adipisci nostrum. Nulla dolores eveniet a recusandae eius magni culpa dicta perspiciatis.
+                                {data.lesson.description}
                             </p>
                             <div className="flex items-center gap-4 mt-6">
-                                <img className="h-16 w-16 rounded-full border-2 border-blue-500" src="https://github.com/YasminRamos.png" />
+                                <img className="h-16 w-16 rounded-full border-2 border-blue-500" src={data.lesson.teacher.avatarURL} />
                                 <div className="leading-relaxed">
-                                    <strong className="font-bold text-2xl block">Yasmin Ramos</strong>
-                                    <span className="text-gray-200 text-sm block">WebDev</span>
+                                    <strong className="font-bold text-2xl block">{data.lesson.teacher.name}</strong>
+                                    <span className="text-gray-200 text-sm block">{data.lesson.teacher.bio}</span>
                                 </div>
 
                             </div>
